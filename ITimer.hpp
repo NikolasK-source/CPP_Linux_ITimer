@@ -183,7 +183,7 @@ namespace ITimer {
              * possible throws:
              *      std::logic_error    an instance already exists
              */
-            ITimer_Real(const timeval &interval);
+            explicit ITimer_Real(const timeval &interval);
 
             /*! \brief create real time interval timer
              *
@@ -232,7 +232,7 @@ namespace ITimer {
              * possible throws:
              *      std::logic_error    an instance already exists
              */
-            ITimer_Virtual(const timeval &interval);
+            explicit ITimer_Virtual(const timeval &interval);
 
             /*! \brief create user cpu time interval timer
              *
@@ -286,7 +286,7 @@ namespace ITimer {
              * possible throws:
              *      std::logic_error    an instance already exists
              */
-            ITimer_Prof(const timeval &interval);
+            explicit ITimer_Prof(const timeval &interval);
 
             /*! \brief create cpu time interval timer
              *
