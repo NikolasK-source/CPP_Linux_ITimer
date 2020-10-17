@@ -13,8 +13,8 @@
  */
 
 #include "ITimer.hpp"
-#include "common_header/sysexcept.hpp"
-#include "common_header/destructor_exception.hpp"
+#include "sysexcept.hpp"
+#include "destructor_exception.hpp"
 #include <cmath>
 #include <limits>
 #include <iostream>
@@ -25,6 +25,8 @@ static constexpr itimerval STOP_TIMER = {{0, 0}, {0, 0}};
 
 static constexpr auto _inf = std::numeric_limits<double>::infinity();
 static constexpr auto _nan = std::numeric_limits<double>::quiet_NaN();
+
+#define USEC_PER_SEC 1000000
 
 namespace de {
 namespace Koesling {
@@ -39,7 +41,7 @@ bool ITimer_Prof::instance_exists = false;
 void ITimer::adjust_speed(double new_factor)
 {
     // not running? --> no time adjustment possible
-    if(!running) throw std::runtime_error(__CURRENT_FUNCTION__ + ": timer not running!");
+    if(!running) throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + ": timer not running!");
 
     // read current timer value
     itimerval val;
@@ -87,7 +89,7 @@ ITimer::~ITimer( )
 
 void ITimer::start( )
 {
-    if(running) throw std::logic_error(__CURRENT_FUNCTION__ + ": timer already started");
+    if(running) throw std::logic_error(std::string(__PRETTY_FUNCTION__) + ": timer already started");
 
     // create scaled timer value
     itimerval timer_val;
@@ -95,7 +97,8 @@ void ITimer::start( )
     timer_val.it_value = timer_value / speed_factor;
 
     if(timer_val.it_interval.tv_sec == 0 && timer_val.it_interval.tv_usec == 0)
-        throw std::runtime_error(__CURRENT_FUNCTION__ + ": invalid timer values due to to a to small speed factor");
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + 
+                ": invalid timer values due to to a to small speed factor");
 
     //start timer;
     sysexcept(setitimer(type, &timer_val, nullptr) < 0, "setitimer", errno);
@@ -105,7 +108,7 @@ void ITimer::start( )
 
 void ITimer::stop( )
 {
-    if(!running) throw std::runtime_error(__CURRENT_FUNCTION__ + ": timer already stopped");
+    if(!running) throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + ": timer already stopped");
 
     // stop timer and save value
     itimerval timer_val;
@@ -124,10 +127,11 @@ void ITimer::stop( )
 void ITimer::set_speed_factor(const double speed_factor)
 {
     // check speed_factor
-    if(speed_factor <= 0.0) throw std::invalid_argument(__CURRENT_FUNCTION__ + ": Negative values not allowed!");
+    if(speed_factor <= 0.0) 
+    throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Negative values not allowed!");
 
     if(speed_factor == _inf || speed_factor == _nan)
-        throw std::invalid_argument(__CURRENT_FUNCTION__ + ": invalid double value!");
+        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": invalid double value!");
 
     bool running = this->running;
 
@@ -156,7 +160,8 @@ ITimer_Real::ITimer_Real(const timeval &interval) :
 {
     // prevent multiple instances
     if(instance_exists)
-        throw std::logic_error(__CURRENT_FUNCTION__ + ": only one interval timer of each type per process possible");
+        throw std::logic_error(std::string(__PRETTY_FUNCTION__) + 
+                ": only one interval timer of each type per process possible");
 
     instance_exists = true;
 }
@@ -167,7 +172,8 @@ ITimer_Real::ITimer_Real(const timeval &interval,
 {
     // prevent multiple instances
     if(instance_exists)
-        throw std::logic_error(__CURRENT_FUNCTION__ + ": only one interval timer of each type per process possible");
+        throw std::logic_error(std::string(__PRETTY_FUNCTION__) + 
+                ": only one interval timer of each type per process possible");
 
     instance_exists = true;
 }
@@ -183,7 +189,8 @@ ITimer_Virtual::ITimer_Virtual(const timeval &interval) :
 {
     // prevent multiple instances
     if(instance_exists)
-        throw std::logic_error(__CURRENT_FUNCTION__ + ": only one interval timer of each type per process possible");
+        throw std::logic_error(std::string(__PRETTY_FUNCTION__) + 
+                ": only one interval timer of each type per process possible");
 
     instance_exists = true;
 }
@@ -194,7 +201,8 @@ ITimer_Virtual::ITimer_Virtual(const timeval &interval,
 {
     // prevent multiple instances
     if(instance_exists)
-        throw std::logic_error(__CURRENT_FUNCTION__ + ": only one interval timer of each type per process possible");
+        throw std::logic_error(std::string(__PRETTY_FUNCTION__) + 
+                ": only one interval timer of each type per process possible");
 
     instance_exists = true;
 }
@@ -210,7 +218,8 @@ ITimer_Prof::ITimer_Prof(const timeval &interval) :
 {
     // prevent multiple instances
     if(instance_exists)
-        throw std::logic_error(__CURRENT_FUNCTION__ + ": only one interval timer of each type per process possible");
+        throw std::logic_error(std::string(__PRETTY_FUNCTION__) + 
+                ": only one interval timer of each type per process possible");
 
     instance_exists = true;
 }
@@ -221,7 +230,8 @@ ITimer_Prof::ITimer_Prof(const timeval &interval,
 {
     // prevent multiple instances
     if(instance_exists)
-        throw std::logic_error(__CURRENT_FUNCTION__ + ": only one interval timer of each type per process possible");
+        throw std::logic_error(std::string(__PRETTY_FUNCTION__) + 
+                ": only one interval timer of each type per process possible");
 
     instance_exists = true;
 }
@@ -323,7 +333,7 @@ void ITimer::to_fstream(std::ofstream &fstream) const
 
 void ITimer::from_fstream(std::ifstream &fstream)
 {
-    if(running) throw std::logic_error(__CURRENT_FUNCTION__ + ": timer must be stopped!");
+    if(running) throw std::logic_error(std::string(__PRETTY_FUNCTION__) + ": timer must be stopped!");
 
     itimerval val;
     fstream.read(reinterpret_cast<char*>(&val), sizeof(val));
